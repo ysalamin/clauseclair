@@ -15,5 +15,5 @@
 - Framing: help users *understand* contracts, not attack insurers (AXA is the jury).
 
 ## Status
-- Where we are: hello-world deployed
-- Next step: PDF upload + text extraction
+- Where we are: hello-world deployed at clauseclair.streamlit.app; PDF upload + extraction done
+- Next step: Claude API call on extracted text
