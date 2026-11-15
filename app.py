@@ -72,17 +72,20 @@ def extract_text(pdf_file) -> str:
 
 
 @st.cache_data(show_spinner=False)
-def analyze(contract_text: str) -> dict:
-    """Ask Claude to flag risky clauses. Cached: same text -> no second API call.
+def analyze(contract_text: str, system_prompt: str, model: str) -> dict:
+    """Ask Claude to flag risky clauses.
+
+    Cached on (function code + arguments). The prompt and model are passed as arguments
+    so that changing them invalidates the cache (globals are NOT part of the cache key).
 
     Returns {"summary": str, "clauses": [...]} or, if Claude didn't use the tool,
     {"raw": str} so we can still show something.
     """
     client = anthropic.Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
     response = client.messages.create(
-        model=MODEL,
+        model=model,
         max_tokens=8000,
-        system=SYSTEM_PROMPT,
+        system=system_prompt,
         tools=[REPORT_TOOL],
         messages=[{"role": "user", "content": f"Here is the contract:\n\n{contract_text}"}],
     )
@@ -116,7 +119,7 @@ if uploaded:
 
     if st.button("🔍 Analyze my contract", type="primary"):
         with st.spinner("Reading the fine print…"):
-            result = analyze(text)
+            result = analyze(text, SYSTEM_PROMPT, MODEL)
 
         if "raw" in result:  # fallback: Claude answered in plain text
             st.markdown(result["raw"])
