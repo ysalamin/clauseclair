@@ -20,6 +20,8 @@ Usually only 2-4 clauses in a contract deserve this.
 - low: unusual or slightly unfavourable, worth knowing but not a deal-breaker.
 Be fair and factual: help the user understand the contract, do not attack the insurer. \
 Do not flag standard, harmless clauses. Answer in English.
+The summary must be neutral and factual, addressed to the student ("you"): never say whether \
+you would sign; instead point to what to clarify or compare before signing.
 Always report your findings by calling the report_clauses tool."""
 
 # Tool use = a way to get Claude's answer as structured JSON matching this schema.
@@ -31,7 +33,7 @@ REPORT_TOOL = {
         "properties": {
             "summary": {
                 "type": "string",
-                "description": "One sentence: the overall verdict for a student.",
+                "description": "One neutral sentence for the student: the main points to clarify before signing.",
             },
             "clauses": {
                 "type": "array",
