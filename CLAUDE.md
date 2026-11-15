@@ -15,7 +15,6 @@
 - Framing: help users *understand* contracts, not attack insurers (AXA is the jury).
 
 ## Status
-- Where we are: deployed at clauseclair.streamlit.app; upload + extraction + Claude analysis rendered as severity cards (tool use) + counts + sort; neutral verdict; sample-contract button; error handling (friendly st.error on API error, truncation + warning at 60,000 chars, `is_insurance_contract` flag -> warning instead of cards); welcome screen (3 columns, hidden once a PDF is loaded); blue primaryColor in `.streamlit/config.toml`; `clauses` returned as a string is json.loads-ed, else shown raw
+- Where we are: feature freeze at T+1:05. App complete: upload + extraction + Claude analysis rendered as severity cards (tool use) + counts + sort; neutral verdict; sample-contract button; error handling (friendly st.error on API error, truncation + warning at 60,000 chars, `is_insurance_contract` flag -> warning instead of cards); welcome screen (hidden once a PDF is loaded); `clauses` returned as a string is json.loads-ed, else shown raw. README + screenshot done. Light theme + blue button (`.streamlit/config.toml`; the deployed app needs a reboot after changes). Demo video script written.
 - Gotcha: keep `is_insurance_contract` AFTER `clauses` in the tool schema; placed first, Claude sometimes returned `clauses` as a string
-- README.md written for the jury (references docs/screenshot.png, still to be added)
-- Next step: demo video script
+- Next step: record the 1-min demo video (warm the cache first: run one analysis just before recording), then retro
