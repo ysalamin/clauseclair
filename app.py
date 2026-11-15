@@ -6,6 +6,7 @@ from pypdf import PdfReader
 
 MODEL = "claude-sonnet-5-5"
 SAMPLE_PDF = Path(__file__).parent / "samples" / "contrat_assurance_menage_fictif.pdf"
+MAX_CHARS = 60_000  # longer contracts are truncated to keep cost and latency reasonable
 
 SYSTEM_PROMPT = """You help international students in Switzerland understand the home \
 insurance contract (inventaire du ménage + responsabilité civile privée) they are about to sign.
@@ -25,6 +26,8 @@ Be fair and factual: help the user understand the contract, do not attack the in
 Do not flag standard, harmless clauses. Answer in English.
 The summary must be neutral and factual, addressed to the student ("you"): never say whether \
 you would sign; instead point to what to clarify or compare before signing.
+If the document is not an insurance contract, set is_insurance_contract to false \
+and leave clauses empty.
 Always report your findings by calling the report_clauses tool."""
 
 # Tool use = a way to get Claude's answer as structured JSON matching this schema.
@@ -53,8 +56,12 @@ REPORT_TOOL = {
                     "required": ["article", "title", "quote", "severity", "explanation", "question"],
                 },
             },
+            "is_insurance_contract": {
+                "type": "boolean",
+                "description": "True if the document is an insurance contract, false if it is something else.",
+            },
         },
-        "required": ["summary", "clauses"],
+        "required": ["summary", "clauses", "is_insurance_contract"],
     },
 }
 
@@ -134,12 +141,26 @@ if pdf_source:
     with st.expander("See extracted text"):
         st.text(text)
 
+    if len(text) > MAX_CHARS:
+        st.warning(
+            f"This document is very long: only the first {MAX_CHARS:,} characters will be analyzed."
+        )
+        text = text[:MAX_CHARS]
+
     if st.button("🔍 Analyze my contract", type="primary"):
-        with st.spinner("Reading the fine print…"):
-            result = analyze(text, SYSTEM_PROMPT, MODEL)
+        try:
+            with st.spinner("Reading the fine print…"):
+                result = analyze(text, SYSTEM_PROMPT, MODEL)
+        except anthropic.APIError:
+            st.error(
+                "Sorry, the analysis service is unavailable right now. Please try again in a minute."
+            )
+            st.stop()
 
         if "raw" in result:  # fallback: Claude answered in plain text
             st.markdown(result["raw"])
+        elif not result.get("is_insurance_contract", True):
+            st.warning("This doesn't look like an insurance contract")
         else:
             clauses = sorted(
                 result["clauses"], key=lambda c: SEVERITY_ORDER.get(c.get("severity"), 3)

@@ -15,5 +15,6 @@
 - Framing: help users *understand* contracts, not attack insurers (AXA is the jury).
 
 ## Status
-- Where we are: hello-world deployed at clauseclair.streamlit.app; upload + extraction + Claude analysis rendered as severity cards (tool use) + counts + sort; neutral verdict; sample-contract button
-- Next step: B) error handling (API error, long PDF, not a contract) then C) welcome screen
+- Where we are: hello-world deployed at clauseclair.streamlit.app; upload + extraction + Claude analysis rendered as severity cards (tool use) + counts + sort; neutral verdict; sample-contract button; error handling (friendly st.error on anthropic.APIError, st.warning + truncation at 60,000 chars, `is_insurance_contract` flag in the tool schema -> warning instead of cards)
+- Gotcha: keep `is_insurance_contract` AFTER `clauses` in the tool schema; placed first, Claude sometimes returned `clauses` as a string
+- Next step: C) welcome screen
