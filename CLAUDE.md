@@ -17,4 +17,5 @@
 ## Status
 - Where we are: deployed at clauseclair.streamlit.app; upload + extraction + Claude analysis rendered as severity cards (tool use) + counts + sort; neutral verdict; sample-contract button; error handling (friendly st.error on API error, truncation + warning at 60,000 chars, `is_insurance_contract` flag -> warning instead of cards); welcome screen (3 columns, hidden once a PDF is loaded); blue primaryColor in `.streamlit/config.toml`; `clauses` returned as a string is json.loads-ed, else shown raw
 - Gotcha: keep `is_insurance_contract` AFTER `clauses` in the tool schema; placed first, Claude sometimes returned `clauses` as a string
-- Next step: (to decide)
+- README.md written for the jury (references docs/screenshot.png, still to be added)
+- Next step: demo video script
