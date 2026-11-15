@@ -1,8 +1,11 @@
+from pathlib import Path
+
 import anthropic
 import streamlit as st
 from pypdf import PdfReader
 
 MODEL = "claude-sonnet-5-5"
+SAMPLE_PDF = Path(__file__).parent / "samples" / "contrat_assurance_menage_fictif.pdf"
 
 SYSTEM_PROMPT = """You help international students in Switzerland understand the home \
 insurance contract (inventaire du ménage + responsabilité civile privée) they are about to sign.
@@ -110,12 +113,24 @@ def show_clause(clause: dict) -> None:
 
 uploaded = st.file_uploader("Upload your insurance contract (PDF)", type="pdf")
 
+# A button is True only during the rerun right after the click, so we remember
+# the choice in session_state (it survives the next click on "Analyze").
+if st.button("📄 No contract at hand? Try a sample (fictional)"):
+    st.session_state.use_sample = True
+
 if uploaded:
-    text = extract_text(uploaded)
+    pdf_source, pdf_name = uploaded, uploaded.name
+elif st.session_state.get("use_sample"):
+    pdf_source, pdf_name = SAMPLE_PDF, "the sample contract (fictional)"
+else:
+    pdf_source = None
+
+if pdf_source:
+    text = extract_text(pdf_source)
     if not text.strip():
         st.error("No text found in this PDF (is it a scanned image?).")
         st.stop()
-    st.success(f"Read {len(text):,} characters from {uploaded.name}.")
+    st.success(f"Read {len(text):,} characters from {pdf_name}.")
     with st.expander("See extracted text"):
         st.text(text)
 

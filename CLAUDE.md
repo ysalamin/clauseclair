@@ -15,5 +15,5 @@
 - Framing: help users *understand* contracts, not attack insurers (AXA is the jury).
 
 ## Status
-- Where we are: hello-world deployed at clauseclair.streamlit.app; upload + extraction + Claude analysis rendered as severity cards (tool use) + counts + sort
-- Next step: check severity balance on real output; demo polish
+- Where we are: hello-world deployed at clauseclair.streamlit.app; upload + extraction + Claude analysis rendered as severity cards (tool use) + counts + sort; neutral verdict; sample-contract button
+- Next step: B) error handling (API error, long PDF, not a contract) then C) welcome screen
