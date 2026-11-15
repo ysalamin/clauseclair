@@ -13,6 +13,11 @@ Identify the clauses that could cost the student money or surprise them later \
 For each one give: the exact quote in French, a severity (high / medium / low), \
 a short plain-English explanation of what it means in practice (2-3 sentences, concrete examples \
 from student life), and one concrete question to ask the insurer before signing.
+Severity must help the student prioritise, so reserve "high" for the few worst clauses:
+- high: in a common student situation, can cost well over CHF 1'000 or remove cover entirely. \
+Usually only 2-4 clauses in a contract deserve this.
+- medium: a real but limited cost or inconvenience.
+- low: unusual or slightly unfavourable, worth knowing but not a deal-breaker.
 Be fair and factual: help the user understand the contract, do not attack the insurer. \
 Do not flag standard, harmless clauses. Answer in English.
 Always report your findings by calling the report_clauses tool."""
@@ -49,6 +54,7 @@ REPORT_TOOL = {
 }
 
 SEVERITY_ICON = {"high": "🔴", "medium": "🟠", "low": "🟢"}
+SEVERITY_ORDER = {"high": 0, "medium": 1, "low": 2}
 
 st.set_page_config(page_title="ClauseClair", page_icon="🛡️")
 
@@ -115,8 +121,17 @@ if uploaded:
         if "raw" in result:  # fallback: Claude answered in plain text
             st.markdown(result["raw"])
         else:
+            clauses = sorted(
+                result["clauses"], key=lambda c: SEVERITY_ORDER.get(c.get("severity"), 3)
+            )
             st.subheader(result["summary"])
-            for clause in result["clauses"]:
+            # Summary row: how many clauses of each severity
+            for col, (sev, label) in zip(
+                st.columns(3), [("high", "High risk"), ("medium", "Medium"), ("low", "Low")]
+            ):
+                count = sum(c.get("severity") == sev for c in clauses)
+                col.metric(f"{SEVERITY_ICON[sev]} {label}", count)
+            for clause in clauses:
                 show_clause(clause)
 
         st.caption("ClauseClair helps you understand your contract. It is not legal advice.")
