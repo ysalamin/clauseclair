@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import anthropic
@@ -118,6 +119,8 @@ def show_clause(clause: dict) -> None:
         st.info(f"**Ask the insurer:** {clause['question']}", icon="💬")
 
 
+welcome = st.container()  # filled below, only while no PDF is loaded
+
 uploaded = st.file_uploader("Upload your insurance contract (PDF)", type="pdf")
 
 # A button is True only during the rerun right after the click, so we remember
@@ -131,6 +134,18 @@ elif st.session_state.get("use_sample"):
     pdf_source, pdf_name = SAMPLE_PDF, "the sample contract (fictional)"
 else:
     pdf_source = None
+    with welcome:
+        for col, (title, body) in zip(
+            st.columns(3),
+            [
+                ("📄 1. Upload", "Your contract, as a PDF, in French."),
+                ("🔍 2. Understand", "Risky clauses ranked 🔴🟠🟢, explained in plain English."),
+                ("💬 3. Ask", "The right questions to ask the insurer before you sign."),
+            ],
+        ):
+            with col:
+                st.markdown(f"**{title}**")
+                st.write(body)
 
 if pdf_source:
     text = extract_text(pdf_source)
@@ -157,14 +172,21 @@ if pdf_source:
             )
             st.stop()
 
+        clauses = result.get("clauses")
+        if isinstance(clauses, str):  # Claude sometimes returns the list as a JSON string
+            try:
+                clauses = json.loads(clauses)
+            except ValueError:
+                pass
+
         if "raw" in result:  # fallback: Claude answered in plain text
             st.markdown(result["raw"])
         elif not result.get("is_insurance_contract", True):
             st.warning("This doesn't look like an insurance contract")
+        elif not isinstance(clauses, list):  # malformed answer: show it rather than crash
+            st.markdown(str(result.get("clauses") or result))
         else:
-            clauses = sorted(
-                result["clauses"], key=lambda c: SEVERITY_ORDER.get(c.get("severity"), 3)
-            )
+            clauses = sorted(clauses, key=lambda c: SEVERITY_ORDER.get(c.get("severity"), 3))
             st.subheader(result["summary"])
             # Summary row: how many clauses of each severity
             for col, (sev, label) in zip(
