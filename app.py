@@ -37,11 +37,15 @@ def analyze(contract_text: str) -> str:
     client = anthropic.Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
     response = client.messages.create(
         model=MODEL,
-        max_tokens=4000,
+        max_tokens=8000,
         system=SYSTEM_PROMPT,
         messages=[{"role": "user", "content": f"Here is the contract:\n\n{contract_text}"}],
     )
-    return response.content[0].text
+    # The response is a list of blocks (thinking, text...). Keep only the text ones.
+    answer = "".join(block.text for block in response.content if block.type == "text")
+    if response.stop_reason == "max_tokens":
+        answer += "\n\n⚠️ *Answer cut off (max_tokens reached).*"
+    return answer
 
 
 uploaded = st.file_uploader("Upload your insurance contract (PDF)", type="pdf")
